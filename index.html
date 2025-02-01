@@ -3,280 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Malosha Music Player</title>
+    <title>MCHANGO WA UMEME </title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f06, #48c6ef); /* Gradient background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
-            color: white;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
 
-        .player-container {
-            background-color: rgba(0, 0, 0, 0.7);  /* Darker background to improve visibility */
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        body {
+            background-color: #f4f4f4;
             text-align: center;
-            width: 350px;
-            backdrop-filter: blur(5px);  /* Soft blur effect */
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            font-size: 30px;
-            color: #fff;
-            margin-bottom: 20px;
-            font-family: 'Roboto', sans-serif;
+            color: #4CAF50;
+            margin-bottom: 15px;
         }
 
-        .audio-player {
+        .form-section input, .form-section button {
             width: 100%;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            background-color: #333;
-            color: #fff;
-        }
-
-        .file-input {
-            margin: 20px 0;
-        }
-
-        .waveform-container {
-            width: 100%;
-            height: 150px;
-            background-color: #333;
-            margin-top: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .equalizer-controls {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            color: #fff;
-        }
-
-        .equalizer-controls input {
-            width: 80%;
-            background-color: #f06;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
             border-radius: 5px;
+        }
+
+        .form-section button {
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 5px;
+            cursor: pointer;
         }
 
-        .preset-button {
+        .form-section button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
-            background-color: #48c6ef;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #d3f8d3;
+        }
+
+        .delete-btn, .edit-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 5px;
+        }
+
+        .edit-btn {
+            background-color: #4CAF50;
+        }
+
+        .delete-btn:hover {
+            background-color: #c13430;
+        }
+
+        .edit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reminder {
+            color: red;
+            font-weight: bold;
+        }
+
+        .tenant-list-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .show-tenants-btn {
+            background-color: #008CBA;
             color: white;
             border: none;
             padding: 10px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
         }
 
-        .preset-button:hover {
-            background-color: #f06;
+        .show-tenants-btn:hover {
+            background-color: #007B9A;
         }
     </style>
 </head>
 <body>
-    <div class="player-container">
-        <h1>Malosha Music Player</h1>
+    <div class="container">
+        <h1>MACHANGO WA LUKU YA UMEME</h1> by malosha 
 
-        <!-- Audio Player -->
-        <audio id="audioPlayer" class="audio-player" controls>
-            <source id="audioSource" src="" type="audio/mp3">
-            Your browser does not support the audio element.
-        </audio>
-
-        <!-- File Input -->
-        <div class="file-input">
-            <input type="file" id="audioInput" accept="audio/*">
+        <div class="form-section">
+            <!-- Kipengele cha Jina -->
+            <input type="text" id="fullName" placeholder="Jina kamili">
+            <!-- Kipengele cha Kiasi alichotoa (Pesa) -->
+            <input type="number" id="amount" placeholder="Pesa aliyotoa (Tsh)" step="0.01" min="0">
+            <!-- Kipengele cha Tarehe kwa calendar -->
+            <input type="date" id="paymentDate" placeholder="Ingiza tarehe (mm/dd/yyyy)">
+            <button onclick="addPayment()">HIFADHI MALIPO</button>
         </div>
 
-        <!-- Waveform Display -->
-        <div class="waveform-container">
-            <canvas id="waveformCanvas"></canvas>
+        <h2>MAJINA YA WAPANGAJI</h2>
+
+        <div class="form-section">
+            <input type="text" id="tenantName" placeholder="Ingiza jina la mpangaji">
+            <button onclick="addTenant()">ONGEZA JINA </button>
         </div>
 
-        <!-- Equalizer Controls -->
-        <div class="equalizer-controls">
-            <label for="low">Low:</label>
-            <input type="range" id="low" min="-20" max="20" value="0">
-        </div>
-        <div class="equalizer-controls">
-            <label for="mid">Mid:</label>
-            <input type="range" id="mid" min="-20" max="20" value="0">
-        </div>
-        <div class="equalizer-controls">
-            <label for="high">High:</label>
-            <input type="range" id="high" min="-20" max="20" value="0">
+        <button class="show-tenants-btn" onclick="toggleTenantList()">Ona Majina Yote</button>
+
+        <div class="tenant-list-container" id="tenantListContainer">
+            <table id="tenantTable">
+                <thead>
+                    <tr>
+                        <th>Jina Kamili</th>
+                        <th>Ametoa?</th>
+                        <th>Vitendo</th>
+                    </tr>
+                </thead>
+                <tbody id="tenantTableBody">
+                    <!-- Wapangaji watakavyo onyeshwa hapa -->
+                </tbody>
+            </table>
         </div>
 
-        <!-- Equalizer Presets -->
-        <button id="popPreset" class="preset-button">Pop</button>
-        <button id="rockPreset" class="preset-button">Rock</button>
-        <button id="classicalPreset" class="preset-button">Classical</button>
+        <table id="paymentsTable">
+            <thead>
+                <tr>
+                    <th>Jina Kamili</th>
+                    <th>Pesa Aliyotoa</th>
+                    <th>Tarehe na Siku</th>
+                    <th>Reminder</th>
+                    <th>Vitendo</th>
+                </tr>
+            </thead>
+            <tbody id="paymentsTableBody">
+                <!-- Payments will be listed here -->
+            </tbody>
+        </table>
     </div>
 
     <script>
-        const audioInput = document.getElementById('audioInput');
-        const audioPlayer = document.getElementById('audioPlayer');
-        const audioSource = document.getElementById('audioSource');
-        const canvas = document.getElementById('waveformCanvas');
-        const canvasContext = canvas.getContext('2d');
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const analyser = audioContext.createAnalyser();
-        let sourceNode;
+        // Hifadhi malipo katika localStorage baada ya kupakia ukurasa
+        document.addEventListener("DOMContentLoaded", loadPayments);
+        document.addEventListener("DOMContentLoaded", loadTenantList);
 
-        // Equalizer Filters
-        const lowFilter = audioContext.createBiquadFilter();
-        lowFilter.type = 'lowshelf';
-        lowFilter.frequency.setValueAtTime(320, audioContext.currentTime);  // Set low shelf frequency
-        lowFilter.gain.setValueAtTime(0, audioContext.currentTime);
+        function addPayment() {
+            const fullName = document.getElementById("fullName").value;
+            const amount = document.getElementById("amount").value;
+            const paymentDate = document.getElementById("paymentDate").value;
 
-        const midFilter = audioContext.createBiquadFilter();
-        midFilter.type = 'peaking';
-        midFilter.frequency.setValueAtTime(1000, audioContext.currentTime);  // Set mid frequency
-        midFilter.gain.setValueAtTime(0, audioContext.currentTime);
-
-        const highFilter = audioContext.createBiquadFilter();
-        highFilter.type = 'highshelf';
-        highFilter.frequency.setValueAtTime(5000, audioContext.currentTime);  // Set high shelf frequency
-        highFilter.gain.setValueAtTime(0, audioContext.currentTime);
-
-        // Connect filters to audio context
-        lowFilter.connect(midFilter);
-        midFilter.connect(highFilter);
-        highFilter.connect(analyser);
-        analyser.connect(audioContext.destination);
-
-        // Load and play the selected audio
-        audioInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const objectURL = URL.createObjectURL(file);
-                audioSource.src = objectURL;
-                audioPlayer.load();
-                audioPlayer.play();
-                createWaveform(file);
+            // Hakikisha sehemu zote zimesajiliwa
+            if (fullName.trim() === "" || amount.trim() === "" || paymentDate.trim() === "") {
+                alert("Tafadhali jaza sehemu zote!");
+                return;
             }
-        });
 
-        // Automatically play next song when the current song ends
-        audioPlayer.addEventListener('ended', playNextSong);
-
-        // Function to play the next song from the playlist
-        function playNextSong() {
-            audioPlayer.pause();
-            audioPlayer.currentTime = 0;
-            audioPlayer.play();
-            createWaveformForNextSong();
-        }
-
-        // Create waveform visualization using Web Audio API
-        function createWaveform(file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                audioContext.decodeAudioData(e.target.result, function(buffer) {
-                    if (sourceNode) {
-                        sourceNode.stop();
-                        sourceNode.disconnect();
-                    }
-                    sourceNode = audioContext.createBufferSource();
-                    sourceNode.buffer = buffer;
-                    sourceNode.connect(lowFilter);  // Connect to the first filter (lowFilter)
-                    sourceNode.start();
-                    visualizeBars();
-                });
+            const payment = {
+                fullName: fullName,
+                amount: parseFloat(amount),
+                paymentDate: paymentDate,
+                reminderSent: false,
             };
-            reader.readAsArrayBuffer(file);
+
+            // Pata malipo yaliyo hifadhiwa katika localStorage au tumia list mpya ikiwa hakuna malipo
+            let payments = JSON.parse(localStorage.getItem("payments")) || [];
+            payments.push(payment);
+            localStorage.setItem("payments", JSON.stringify(payments));
+
+            // Ongeza jina la mpangaji kwenye orodha ya wapangaji
+            addTenantToList(fullName);
+
+            // Safisha fomu
+            document.getElementById("fullName").value = "";
+            document.getElementById("amount").value = "";
+            document.getElementById("paymentDate").value = "";
+
+            // Onyesha malipo yaliyohifadhiwa
+            loadPayments();
         }
 
-        // Function to visualize the waveform as bars with color gradients
-        function visualizeBars() {
-            analyser.fftSize = 512;  // Increased fftSize for more bars
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
+        function addTenant() {
+            const tenantName = document.getElementById("tenantName").value.trim();
 
-            canvas.width = window.innerWidth;
-            canvas.height = 150;
-
-            function draw() {
-                requestAnimationFrame(draw);
-
-                // Ensure no drawing occurs when audio is paused
-                if (audioPlayer.paused) return;
-
-                analyser.getByteFrequencyData(dataArray);
-
-                canvasContext.fillStyle = 'rgb(255, 255, 255)';
-                canvasContext.fillRect(0, 0, canvas.width, canvas.height);
-
-                const barWidth = (canvas.width / bufferLength) * 2.5;
-                let x = 0;
-
-                for (let i = 0; i < bufferLength; i++) {
-                    const barHeight = dataArray[i];
-                    const red = Math.min(255, barHeight + 100);
-                    const green = Math.min(255, barHeight + 50);
-                    const blue = Math.max(0, barHeight - 100);
-
-                    canvasContext.fillStyle = `rgb(${red}, ${green}, ${blue})`;
-                    canvasContext.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                    x += barWidth + 1;
-                }
+            if (tenantName === "") {
+                alert("Tafadhali ingiza jina la mpangaji.");
+                return;
             }
 
-            draw();
+            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
+
+            // Hakikisha jina la mpangaji halijajiingiza
+            if (!tenants.includes(tenantName)) {
+                tenants.push({ name: tenantName, paid: false });
+                localStorage.setItem("tenants", JSON.stringify(tenants));
+            }
+
+            // Safisha fomu
+            document.getElementById("tenantName").value = "";
+
+            loadTenantList(); // Onyesha orodha ya wapangaji tena
         }
 
-        // Update equalizer values based on input changes
-        document.getElementById('low').addEventListener('input', (event) => {
-            lowFilter.gain.setValueAtTime(event.target.value, audioContext.currentTime);
-        });
+        function addTenantToList(fullName) {
+            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
 
-        document.getElementById('mid').addEventListener('input', (event) => {
-            midFilter.gain.setValueAtTime(event.target.value, audioContext.currentTime);
-        });
+            if (!tenants.find(t => t.name === fullName)) {
+                tenants.push({ name: fullName, paid: false });
+                localStorage.setItem("tenants", JSON.stringify(tenants));
+            }
 
-        document.getElementById('high').addEventListener('input', (event) => {
-            highFilter.gain.setValueAtTime(event.target.value, audioContext.currentTime);
-        });
+            loadTenantList(); // Onyesha orodha ya wapangaji tena
+        }
 
-        // Apply preset equalizer settings
-        document.getElementById('popPreset').addEventListener('click', () => {
-            lowFilter.gain.setValueAtTime(4, audioContext.currentTime);  // Boost lows
-            midFilter.gain.setValueAtTime(0, audioContext.currentTime);  // Neutral mids
-            highFilter.gain.setValueAtTime(6, audioContext.currentTime); // Boost highs
-        });
+        function loadPayments() {
+            const payments = JSON.parse(localStorage.getItem("payments")) || [];
+            const tableBody = document.getElementById("paymentsTableBody");
+            tableBody.innerHTML = "";
 
-        document.getElementById('rockPreset').addEventListener('click', () => {
-            lowFilter.gain.setValueAtTime(6, audioContext.currentTime);  // Boost lows
-            midFilter.gain.setValueAtTime(3, audioContext.currentTime);  // Boost mids
-            highFilter.gain.setValueAtTime(-2, audioContext.currentTime); // Reduce highs
-        });
+            payments.forEach((payment, index) => {
+                const paymentDate = new Date(payment.paymentDate);
+                const today = new Date();
+                const daysSincePayment = Math.ceil((today - paymentDate) / (1000 * 3600 * 24));
 
-        document.getElementById('classicalPreset').addEventListener('click', () => {
-            lowFilter.gain.setValueAtTime(0, audioContext.currentTime);  // Neutral lows
-            midFilter.gain.setValueAtTime(0, audioContext.currentTime);  // Neutral mids
-            highFilter.gain.setValueAtTime(0, audioContext.currentTime); // Neutral highs
-        });
+                // Get the day of the week
+                const dayNames = ["Jumapili", "Jumatatu", "Jumanne", "Jumatano", "Alhamisi", "Ijumaa", "Jumamosi"];
+                const dayName = dayNames[paymentDate.getDay()];
+
+                // Calculate remaining days for the next payment reminder
+                const remainingDays = 7 - daysSincePayment;
+
+                const reminderMessage = (remainingDays <= 0 && !payment.reminderSent) 
+                    ? `<span class="reminder">Tafadhali kulipa sasa! (Jumapili)</span>` 
+                    : (remainingDays > 0 
+                        ? `<span class="reminder">Bado ${remainingDays} siku kabla ya kulipa tena.</span>` 
+                        : "");
+
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${payment.fullName}</td>
+                    <td>${payment.amount.toFixed(2)}</td>
+                    <td>${paymentDate.toLocaleDateString('sw-TZ')} (${dayName})</td>
+                    <td>${reminderMessage}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editPayment(${index})">Hariri</button>
+                        <button class="delete-btn" onclick="deletePayment(${index})">Futa</button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function loadTenantList() {
+            const tenantTableBody = document.getElementById("tenantTableBody");
+            const tenants = JSON.parse(localStorage.getItem("tenants")) || [];
+
+            tenantTableBody.innerHTML = tenants.map((tenant, index) => {
+                return `
+                    <tr>
+                        <td>${tenant.name}</td>
+                        <td>
+                            <input type="checkbox" 
+                                   ${tenant.paid ? 'checked' : ''} 
+                                   onchange="togglePaymentStatus(${index})">
+                        </td>
+                        <td>
+                            <button class="edit-btn" onclick="editTenant(${index})">Hariri</button>
+                            <button class="delete-btn" onclick="deleteTenant(${index})">Futa</button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function togglePaymentStatus(index) {
+            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
+            tenants[index].paid = !tenants[index].paid;
+            localStorage.setItem("tenants", JSON.stringify(tenants));
+
+            loadTenantList(); // Onyesha orodha ya wapangaji tena
+        }
+
+        function deletePayment(index) {
+            let payments = JSON.parse(localStorage.getItem("payments")) || [];
+            payments.splice(index, 1);
+            localStorage.setItem("payments", JSON.stringify(payments));
+            loadPayments();
+        }
+
+        function editPayment(index) {
+            let payments = JSON.parse(localStorage.getItem("payments")) || [];
+            const payment = payments[index];
+
+            document.getElementById("fullName").value = payment.fullName;
+            document.getElementById("amount").value = payment.amount;
+            document.getElementById("paymentDate").value = payment.paymentDate;
+
+            // Remove the payment and allow editing
+            payments.splice(index, 1);
+            localStorage.setItem("payments", JSON.stringify(payments));
+            loadPayments();
+        }
+
+        function editTenant(index) {
+            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
+            const tenant = tenants[index];
+
+            const newTenantName = prompt("Badilisha jina la mpangaji:", tenant.name);
+
+            if (newTenantName && newTenantName.trim() !== "") {
+                tenants[index].name = newTenantName.trim();
+                localStorage.setItem("tenants", JSON.stringify(tenants));
+                loadTenantList();
+            }
+        }
+
+        function deleteTenant(index) {
+            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
+            tenants.splice(index, 1);
+            localStorage.setItem("tenants", JSON.stringify(tenants));
+            loadTenantList();
+        }
+
+        function toggleTenantList() {
+            const tenantListContainer = document.getElementById("tenantListContainer");
+            const button = document.querySelector(".show-tenants-btn");
+
+            if (tenantListContainer.style.display === "none") {
+                tenantListContainer.style.display = "block";
+                button.innerHTML = "Ficha Majina Yote";
+            } else {
+                tenantListContainer.style.display = "none";
+                button.innerHTML = "Ona Majina Yote";
+            }
+        }
     </script>
 </body>
 </html>
