@@ -1,380 +1,1393 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCHANGO WA UMEME </title>
+    <title>Mfumo wa Kupiga Kura</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #007BFF;
+            --secondary-color: #2C3E50;
+            --background-color: #F4F7FA;
+            --border-color: #DDE4E9;
+            --hover-color: #E9F1FF;
+            --text-color: #2C3E50;
+            --text-secondary: #7F8C8D;
+            --danger-color: #E74C3C;
+            --success-color: #27AE60;
+            --highlight-max: #FFD700;
+            --highlight-min: #D3D3D3;
         }
 
         body {
-            background-color: #f4f4f4;
-            text-align: center;
-            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            box-sizing: border-box;
+            animation: fadeIn 0.5s ease-in-out;
         }
 
-        h1 {
-            color: #4CAF50;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .poll-header {
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .poll-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .time-remaining {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .poll-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .poll-options {
+            margin-bottom: 20px;
+        }
+
+        .poll-option {
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .poll-option:hover {
+            background-color: var(--hover-color);
+            transform: translateX(5px);
+        }
+
+        .poll-option.selected {
+            border-color: var(--primary-color);
+            background-color: var(--hover-color);
+        }
+
+        .poll-option.disabled {
+            cursor: default;
+        }
+
+        .poll-option.most-voted {
+            border-color: var(--highlight-max);
+            background-color: rgba(255, 215, 0, 0.1);
+        }
+
+        .poll-option.least-voted {
+            border-color: var(--highlight-min);
+            background-color: rgba(211, 211, 211, 0.1);
+        }
+
+        .poll-option-text {
+            font-size: 16px;
+            flex-grow: 1;
+        }
+
+        .poll-result {
+            display: none;
+            height: 10px;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+            margin-top: 10px;
+            width: 0;
+            transition: width 1s ease-in-out;
+        }
+
+        .poll-percentage {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: right;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .vote-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .vote-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .vote-btn:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .results-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .total-votes {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            text-align: center;
+            display: none; /* Hidden by default, shown based on visibility */
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .style-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .toggle-btn {
+            background-color: var(--border-color);
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:first-child {
+            border-radius: 20px 0 0 20px;
+        }
+
+        .toggle-btn:last-child {
+            border-radius: 0 20px 20px 0;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .whatsapp-theme {
+            --primary-color: #00C4B4;
+            --secondary-color: #1A3C34;
+            --background-color: #F0F2F5;
+            --border-color: #DDE4E9;
+            --hover-color: #E6ECEF;
+        }
+
+        .create-poll-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: block;
+        }
+
+        .create-poll-btn:hover {
+            background-color: #1A3C34;
+            transform: scale(1.05);
+        }
+
+        .create-poll-form, .edit-poll-form {
+            display: none;
+            margin-top: 20px;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .option-input-container {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .option-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .option-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .remove-option-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-option-btn:hover {
+            background-color: #C0392B;
+            transform: scale(1.1);
+        }
+
+        .add-option-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-option-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .submit-poll-btn, .update-poll-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-poll-btn:hover, .update-poll-btn:hover {
+            background-color: #219653;
+            transform: scale(1.05);
+        }
+
+        .admin-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in-out;
+            display: none;
+        }
+
+        .admin-poll-card {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
             margin-bottom: 15px;
         }
 
-        .form-section input, .form-section button {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .admin-poll-card div {
+            margin-bottom: 10px;
         }
 
-        .form-section button {
-            background-color: #4CAF50;
+        .admin-poll-card strong {
+            color: var(--primary-color);
+        }
+
+        .options-list {
+            margin-left: 20px;
+        }
+
+        .options-list div {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .delete-btn, .edit-btn, .back-btn {
+            background-color: var(--danger-color);
             color: white;
             border: none;
+            border-radius: 10px;
+            padding: 8px 15px;
             cursor: pointer;
-        }
-
-        .form-section button:hover {
-            background-color: #45a049;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        td {
-            background-color: #f9f9f9;
-        }
-
-        tr:hover {
-            background-color: #d3f8d3;
-        }
-
-        .delete-btn, .edit-btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            margin: 5px;
-            border-radius: 5px;
+            transition: all 0.3s ease;
+            margin-right: 10px;
         }
 
         .edit-btn {
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
+        }
+
+        .delete-btn:hover, .edit-btn:hover, .back-btn:hover {
+            transform: scale(1.05);
         }
 
         .delete-btn:hover {
-            background-color: #c13430;
+            background-color: #C0392B;
         }
 
         .edit-btn:hover {
-            background-color: #45a049;
+            background-color: #0056b3;
         }
 
-        .reminder {
-            color: red;
+        .icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .password-modal, .error-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .password-modal-content, .error-modal-content {
+            background: linear-gradient(135deg, #ffffff, #f0f4ff);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            animation: slideUp 0.5s ease-in-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .password-modal-content h2, .error-modal-content h2 {
+            margin: 0 0 25px;
+            font-size: 26px;
+            color: var(--primary-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .password-modal-content input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+
+        .password-modal-content input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+            outline: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .password-modal-content button, .error-modal-content button {
+            background: linear-gradient(90deg, var(--primary-color), #0056b3);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .error-modal-content p {
+            color: var(--danger-color);
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        .password-modal-content button:hover, .error-modal-content button:hover {
+            background: linear-gradient(90deg, #0056b3, var(--primary-color));
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .time-expired {
+            color: var(--danger-color);
             font-weight: bold;
         }
 
-        .tenant-list-container {
-            display: none;
-            margin-top: 20px;
+        body.dark-mode {
+            --background-color: #1A1A1A;
+            --text-color: #FFFFFF;
+            --border-color: #444;
+            --hover-color: #333;
         }
 
-        .show-tenants-btn {
-            background-color: #008CBA;
+        body.dark-mode .container, body.dark-mode .admin-section {
+            background-color: #2D2D2D;
+        }
+
+        body.dark-mode .password-modal-content, body.dark-mode .error-modal-content {
+            background: linear-gradient(135deg, #2D2D2D, #444);
+        }
+
+        .mode-toggle {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 8px 15px;
+            border-radius: 15px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .show-tenants-btn:hover {
-            background-color: #007B9A;
+        .mode-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>MACHANGO WA LUKU YA UMEME</h1> by malosha 
-
-        <div class="form-section">
-            <!-- Kipengele cha Jina -->
-            <input type="text" id="fullName" placeholder="Jina kamili">
-            <!-- Kipengele cha Kiasi alichotoa (Pesa) -->
-            <input type="number" id="amount" placeholder="Pesa aliyotoa (Tsh)" step="0.01" min="0">
-            <!-- Kipengele cha Tarehe kwa calendar -->
-            <input type="date" id="paymentDate" placeholder="Ingiza tarehe (mm/dd/yyyy)">
-            <button onclick="addPayment()">HIFADHI MALIPO</button>
+        <div class="style-toggle">
+            <button class="toggle-btn active" data-theme="twitter">OLD STYLE</button>
+            <button class="toggle-btn" data-theme="whatsapp">MORDEN STYLE</button>
         </div>
 
-        <h2>MAJINA YA WAPANGAJI</h2>
-
-        <div class="form-section">
-            <input type="text" id="tenantName" placeholder="Ingiza jina la mpangaji">
-            <button onclick="addTenant()">ONGEZA JINA </button>
+        <button class="create-poll-btn"><span class="icon">✍️</span>malosha use only</button>
+        
+        <div class="create-poll-form">
+            <div class="form-group">
+                <label class="form-label" for="poll-title"><span class="icon">❓</span>Swali la Kura:</label>
+                <input type="text" id="poll-title" class="form-input" placeholder="Andika swali lako hapa">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><span class="icon">✅</span>Chaguo:</label>
+                <div id="options-container">
+                    <div class="option-input-container">
+                        <input type="text" class="option-input" placeholder="Chaguo 1">
+                        <button class="remove-option-btn">✕</button>
+                    </div>
+                    <div class="option-input-container">
+                        <input type="text" class="option-input" placeholder="Chaguo 2">
+                        <button class="remove-option-btn">✕</button>
+                    </div>
+                </div>
+                <button class="add-option-btn"><span class="icon">➕</span>Ongeza Chaguo</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="poll-duration"><span class="icon">⏳</span>Muda wa Kura:</label>
+                <input type="number" id="poll-duration" class="form-input" min="1" placeholder="Weka muda wa mwisho wa upigaji kura">
+                <select id="duration-unit" class="form-select">          
+                    <option value="seconds">Sekunde</option>
+                    <option value="minutes">Dakika</option>
+                    <option value="hours">Saa</option>
+                    <option value="weeks">Wiki</option>
+                    <option value="months">Mwezi</option>
+                    <option value="years">Mwaka</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="results-visibility"><span class="icon">👁️</span>Matokeo Yaonekane:</label>
+                <select id="results-visibility" class="form-select">
+                    <option value="always">Muda Wote</option>
+                    <option value="after-poll-ends">Hadi Kura Imalize</option>
+                    <option value="admin-only">Admin Pekee</option>
+                    <option value="after-voting">Baada ya Kupiga Kura</option>
+                </select>
+            </div>
+            <button class="submit-poll-btn"><span class="icon">🚀</span>Tengeneza Kura</button>
         </div>
 
-        <button class="show-tenants-btn" onclick="toggleTenantList()">Ona Majina Yote</button>
-
-        <div class="tenant-list-container" id="tenantListContainer">
-            <table id="tenantTable">
-                <thead>
-                    <tr>
-                        <th>Jina Kamili</th>
-                        <th>Ametoa?</th>
-                        <th>Vitendo</th>
-                    </tr>
-                </thead>
-                <tbody id="tenantTableBody">
-                    <!-- Wapangaji watakavyo onyeshwa hapa -->
-                </tbody>
-            </table>
+        <div class="edit-poll-form">
+            <div class="form-group">
+                <label class="form-label" for="edit-poll-title"><span class="icon">❓</span>Swali la Kura:</label>
+                <input type="text" id="edit-poll-title" class="form-input" placeholder="Andika swali lako hapa">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="edit-poll-duration"><span class="icon">⏳</span>Muda wa Kura:</label>
+                <input type="number" id="edit-poll-duration" class="form-input" min="1" placeholder="Weka muda wa mwisho">
+                <select id="edit-duration-unit" class="form-select">
+                    <option value="seconds">Sekunde</option>
+                    <option value="minutes">Dakika</option>
+                    <option value="hours">Saa</option>
+                    <option value="weeks">Wiki</option>
+                    <option value="months">Mwezi</option>
+                    <option value="years">Mwaka</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label"><span class="icon">✅</span>Chaguo:</label>
+                <div id="edit-options-container"></div>
+                <button class="add-option-btn"><span class="icon">➕</span>Ongeza Chaguo</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="edit-results-visibility"><span class="icon">👁️</span>Matokeo Yaonekane:</label>
+                <select id="edit-results-visibility" class="form-select">
+                    <option value="always">Muda Wote</option>
+                    <option value="after-poll-ends">Hadi Kura Imalize</option>
+                    <option value="admin-only">Admin Pekee</option>
+                    <option value="after-voting">Baada ya Kupiga Kura</option>
+                </select>
+            </div>
+            <button class="update-poll-btn"><span class="icon">🔄</span>Rekebisha Kura</button>
         </div>
 
-        <table id="paymentsTable">
-            <thead>
-                <tr>
-                    <th>Jina Kamili</th>
-                    <th>Pesa Aliyotoa</th>
-                    <th>Tarehe na Siku</th>
-                    <th>Reminder</th>
-                    <th>Vitendo</th>
-                </tr>
-            </thead>
-            <tbody id="paymentsTableBody">
-                <!-- Payments will be listed here -->
-            </tbody>
-        </table>
+        <div id="active-poll">
+            <div class="poll-header">
+                <div>
+                    <div class="poll-title"></div>
+                    <div class="time-remaining"></div>
+                </div>
+                <span class="icon">🕒</span>
+    </div>
+            <div class="poll-info">
+                <span class="poll-author"></span>
+                <span class="poll-date"></span>
+            </div>
+            <div class="poll-options" id="poll-options"></div>
+            <button id="vote-btn" class="vote-btn" disabled><span class="icon">🗳️</span>Piga Kura</button>
+            <div id="error-message" class="error-message"></div>
+            <div class="results-info">Matokeo yataonekana baada ya kupiga kura</div>
+            <div class="total-votes">Jumla ya kura: <span id="votes-count">0</span></div>
+        </div>
+
+        <div class="admin-section" id="admin-section">
+            <h2><span class="icon">👤</span>Admin Panel</h2>
+            <button class="back-btn" id="back-btn"><span class="icon">⬅️</span>Rudi Nyuma</button>
+            <div id="admin-polls-list"></div>
+            <h3><span class="icon">📜</span>Historia ya Kura</h3>
+            <div id="admin-history-list"></div>
+        </div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn" id="light-mode">Light Mode</button>
+            <button class="mode-btn" id="dark-mode">Dark Mode</button>
+        </div>
+    </div>
+
+    <div class="password-modal" id="password-modal">
+        <div class="password-modal-content">
+            <h2><span class="icon">🔒</span>TRY ANY PASSWORD</h2>
+            <input type="password" id="password-input" placeholder="Nenosiri">
+            <div class="modal-buttons">
+                <button class="back-btn" id="password-back-btn"><span class="icon">⬅️</span>Rudi Nyuma</button>
+                <button id="password-submit"><span class="icon">✅</span>Thibitisha</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="error-modal" id="error-modal">
+        <div class="error-modal-content">
+            <h2><span class="icon">⚠️</span>Hatakiwi</h2>
+            <p>Nenosiri sio sahihi! Tafadhali wasiliana na David Malosha Amos kwa namba <strong>0785197452</strong> au <strong>0623715858</strong> kupitia WhatsApp ili upate nenosiri sahihi.</p>
+            <button id="error-close-btn"><span class="icon">✖️</span>Funga</button>
+        </div>
     </div>
 
     <script>
-        // Hifadhi malipo katika localStorage baada ya kupakia ukurasa
-        document.addEventListener("DOMContentLoaded", loadPayments);
-        document.addEventListener("DOMContentLoaded", loadTenantList);
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxibHHgfBunsCVowPCKWDIV2K3kG9OviE",
+            authDomain: "x-poll-6dc62.firebaseapp.com",
+            databaseURL: "https://x-poll-6dc62-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "x-poll-6dc62",
+            storageBucket: "x-poll-6dc62.firebasestorage.app",
+            messagingSenderId: "463476174133",
+            appId: "1:463476174133:web:9c68ee0f855b6e0c28b07c",
+            measurementId: "G-T5N05Z0ETF"
+        };
 
-        function addPayment() {
-            const fullName = document.getElementById("fullName").value;
-            const amount = document.getElementById("amount").value;
-            const paymentDate = document.getElementById("paymentDate").value;
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            // Hakikisha sehemu zote zimesajiliwa
-            if (fullName.trim() === "" || amount.trim() === "" || paymentDate.trim() === "") {
-                alert("Tafadhali jaza sehemu zote!");
-                return;
+        const defaultPoll = {
+            id: 'default-poll',
+            title: 'Muda wa kura unaweza kuisha lini?',
+            author: 'maloshadavid@92gmail.com',
+            date: new Date().toLocaleDateString('sw'),
+            options: [
+                { id: 1, text: 'Saa 1', votes: 0 },
+                { id: 2, text: 'Saa 2', votes: 0 }
+            ],
+            totalVotes: 0,
+            duration: 5,
+            durationUnit: 'minutes',
+            endTime: null,
+            isExpired: false,
+            resultsVisibility: 'after-voting',
+            voters: {}
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const pollOptionsEl = document.getElementById('poll-options');
+            const voteBtn = document.getElementById('vote-btn');
+            const errorMessage = document.getElementById('error-message');
+            const resultsInfo = document.querySelector('.results-info');
+            const totalVotesEl = document.querySelector('.total-votes');
+            const votesCountEl = document.getElementById('votes-count');
+            const timeRemainingEl = document.querySelector('.time-remaining');
+            const themeToggleBtns = document.querySelectorAll('.toggle-btn');
+            const createPollBtn = document.querySelector('.create-poll-btn');
+            const createPollForm = document.querySelector('.create-poll-form');
+            const editPollForm = document.querySelector('.edit-poll-form');
+            const activePollEl = document.getElementById('active-poll');
+            const adminSection = document.getElementById('admin-section');
+            const adminPollsList = document.getElementById('admin-polls-list');
+            const adminHistoryList = document.getElementById('admin-history-list');
+            const passwordModal = document.getElementById('password-modal');
+            const passwordInput = document.getElementById('password-input');
+            const passwordSubmit = document.getElementById('password-submit');
+            const passwordBackBtn = document.getElementById('password-back-btn');
+            const backBtn = document.getElementById('back-btn');
+            const lightModeBtn = document.getElementById('light-mode');
+            const darkModeBtn = document.getElementById('dark-mode');
+            const errorModal = document.getElementById('error-modal');
+            const errorCloseBtn = document.getElementById('error-close-btn');
+
+            let selectedOption = null;
+            let currentPoll = null;
+            let allPolls = [];
+            let pollHistory = [];
+            let hasVoted = false;
+            let isAdmin = false;
+            const CREATE_POLL_PASSWORD = "1340";
+            let userIp = null;
+
+            function init() {
+                getUserIp(ip => {
+                    userIp = ip;
+                    loadPollsFromFirebase();
+                });
+                loadHistoryFromFirebase();
+                setupEventListeners();
+                checkPollExpiration();
+                updateTimeRemaining();
             }
 
-            const payment = {
-                fullName: fullName,
-                amount: parseFloat(amount),
-                paymentDate: paymentDate,
-                reminderSent: false,
-            };
-
-            // Pata malipo yaliyo hifadhiwa katika localStorage au tumia list mpya ikiwa hakuna malipo
-            let payments = JSON.parse(localStorage.getItem("payments")) || [];
-            payments.push(payment);
-            localStorage.setItem("payments", JSON.stringify(payments));
-
-            // Ongeza jina la mpangaji kwenye orodha ya wapangaji
-            addTenantToList(fullName);
-
-            // Safisha fomu
-            document.getElementById("fullName").value = "";
-            document.getElementById("amount").value = "";
-            document.getElementById("paymentDate").value = "";
-
-            // Onyesha malipo yaliyohifadhiwa
-            loadPayments();
-        }
-
-        function addTenant() {
-            const tenantName = document.getElementById("tenantName").value.trim();
-
-            if (tenantName === "") {
-                alert("Tafadhali ingiza jina la mpangaji.");
-                return;
+            function sanitizeKey(key) {
+                return key.replace(/[.#$/[\]]/g, '_');
             }
 
-            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-
-            // Hakikisha jina la mpangaji halijajiingiza
-            if (!tenants.includes(tenantName)) {
-                tenants.push({ name: tenantName, paid: false });
-                localStorage.setItem("tenants", JSON.stringify(tenants));
+            function loadPollsFromFirebase() {
+                db.ref('polls').on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        allPolls = Object.values(data).map(poll => ({
+                            ...poll,
+                            voters: poll.voters || {}
+                        }));
+                        currentPoll = allPolls[0];
+                        renderPoll();
+                        if (shouldShowResults()) showResults();
+                        if (isAdmin) updateAdminPanel();
+                    } else {
+                        allPolls = [defaultPoll];
+                        allPolls[0].endTime = new Date().getTime() + defaultPoll.duration * 60000;
+                        currentPoll = allPolls[0];
+                        savePollsToFirebase();
+                        renderPoll();
+                        if (shouldShowResults()) showResults();
+                    }
+                    checkIfUserVoted();
+                });
             }
 
-            // Safisha fomu
-            document.getElementById("tenantName").value = "";
-
-            loadTenantList(); // Onyesha orodha ya wapangaji tena
-        }
-
-        function addTenantToList(fullName) {
-            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-
-            if (!tenants.find(t => t.name === fullName)) {
-                tenants.push({ name: fullName, paid: false });
-                localStorage.setItem("tenants", JSON.stringify(tenants));
+            function loadHistoryFromFirebase() {
+                db.ref('history').once('value', (snapshot) => {
+                    const data = snapshot.val();
+                    pollHistory = data ? Object.values(data) : [];
+                    if (isAdmin) updateAdminPanel();
+                });
             }
 
-            loadTenantList(); // Onyesha orodha ya wapangaji tena
-        }
-
-        function loadPayments() {
-            const payments = JSON.parse(localStorage.getItem("payments")) || [];
-            const tableBody = document.getElementById("paymentsTableBody");
-            tableBody.innerHTML = "";
-
-            payments.forEach((payment, index) => {
-                const paymentDate = new Date(payment.paymentDate);
-                const today = new Date();
-                const daysSincePayment = Math.ceil((today - paymentDate) / (1000 * 3600 * 24));
-
-                // Get the day of the week
-                const dayNames = ["Jumapili", "Jumatatu", "Jumanne", "Jumatano", "Alhamisi", "Ijumaa", "Jumamosi"];
-                const dayName = dayNames[paymentDate.getDay()];
-
-                // Calculate remaining days for the next payment reminder
-                const remainingDays = 7 - daysSincePayment;
-
-                const reminderMessage = (remainingDays <= 0 && !payment.reminderSent) 
-                    ? `<span class="reminder">Tafadhali kulipa sasa! (Jumapili)</span>` 
-                    : (remainingDays > 0 
-                        ? `<span class="reminder">Bado ${remainingDays} siku kabla ya kulipa tena.</span>` 
-                        : "");
-
-                const row = document.createElement("tr");
-
-                row.innerHTML = `
-                    <td>${payment.fullName}</td>
-                    <td>${payment.amount.toFixed(2)}</td>
-                    <td>${paymentDate.toLocaleDateString('sw-TZ')} (${dayName})</td>
-                    <td>${reminderMessage}</td>
-                    <td>
-                        <button class="edit-btn" onclick="editPayment(${index})">Hariri</button>
-                        <button class="delete-btn" onclick="deletePayment(${index})">Futa</button>
-                    </td>
-                `;
-
-                tableBody.appendChild(row);
-            });
-        }
-
-        function loadTenantList() {
-            const tenantTableBody = document.getElementById("tenantTableBody");
-            const tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-
-            tenantTableBody.innerHTML = tenants.map((tenant, index) => {
-                return `
-                    <tr>
-                        <td>${tenant.name}</td>
-                        <td>
-                            <input type="checkbox" 
-                                   ${tenant.paid ? 'checked' : ''} 
-                                   onchange="togglePaymentStatus(${index})">
-                        </td>
-                        <td>
-                            <button class="edit-btn" onclick="editTenant(${index})">Hariri</button>
-                            <button class="delete-btn" onclick="deleteTenant(${index})">Futa</button>
-                        </td>
-                    </tr>
-                `;
-            }).join("");
-        }
-
-        function togglePaymentStatus(index) {
-            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-            tenants[index].paid = !tenants[index].paid;
-            localStorage.setItem("tenants", JSON.stringify(tenants));
-
-            loadTenantList(); // Onyesha orodha ya wapangaji tena
-        }
-
-        function deletePayment(index) {
-            let payments = JSON.parse(localStorage.getItem("payments")) || [];
-            payments.splice(index, 1);
-            localStorage.setItem("payments", JSON.stringify(payments));
-            loadPayments();
-        }
-
-        function editPayment(index) {
-            let payments = JSON.parse(localStorage.getItem("payments")) || [];
-            const payment = payments[index];
-
-            document.getElementById("fullName").value = payment.fullName;
-            document.getElementById("amount").value = payment.amount;
-            document.getElementById("paymentDate").value = payment.paymentDate;
-
-            // Remove the payment and allow editing
-            payments.splice(index, 1);
-            localStorage.setItem("payments", JSON.stringify(payments));
-            loadPayments();
-        }
-
-        function editTenant(index) {
-            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-            const tenant = tenants[index];
-
-            const newTenantName = prompt("Badilisha jina la mpangaji:", tenant.name);
-
-            if (newTenantName && newTenantName.trim() !== "") {
-                tenants[index].name = newTenantName.trim();
-                localStorage.setItem("tenants", JSON.stringify(tenants));
-                loadTenantList();
+            function savePollsToFirebase() {
+                db.ref('polls').set(allPolls);
             }
-        }
 
-        function deleteTenant(index) {
-            let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
-            tenants.splice(index, 1);
-            localStorage.setItem("tenants", JSON.stringify(tenants));
-            loadTenantList();
-        }
-
-        function toggleTenantList() {
-            const tenantListContainer = document.getElementById("tenantListContainer");
-            const button = document.querySelector(".show-tenants-btn");
-
-            if (tenantListContainer.style.display === "none") {
-                tenantListContainer.style.display = "block";
-                button.innerHTML = "Ficha Majina Yote";
-            } else {
-                tenantListContainer.style.display = "none";
-                button.innerHTML = "Ona Majina Yote";
+            function saveHistoryToFirebase() {
+                db.ref('history').set(pollHistory);
             }
-        }
+
+            function getUserIp(callback) {
+                fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => callback(data.ip))
+                    .catch(() => callback('unknown_' + Date.now()));
+            }
+
+            function renderPoll() {
+                if (!currentPoll) return;
+                document.querySelector('.poll-title').textContent = currentPoll.title;
+                document.querySelector('.poll-author').textContent = currentPoll.author;
+                document.querySelector('.poll-date').textContent = currentPoll.date;
+
+                pollOptionsEl.innerHTML = '';
+                currentPoll.options.forEach(option => {
+                    const optionEl = document.createElement('div');
+                    optionEl.className = 'poll-option';
+                    optionEl.dataset.option = option.id;
+                    optionEl.innerHTML = `
+                        <div class="poll-option-text">${option.text}</div>
+                        <div class="poll-result"></div>
+                        <div class="poll-percentage">0%</div>
+                    `;
+                    pollOptionsEl.appendChild(optionEl);
+                });
+
+                selectedOption = null;
+                voteBtn.disabled = true;
+                errorMessage.style.display = 'none';
+                totalVotesEl.style.display = shouldShowResults() ? 'block' : 'none';
+                votesCountEl.textContent = currentPoll.totalVotes;
+                resultsInfo.style.display = shouldShowResults() ? 'none' : 'block';
+
+                document.querySelectorAll('.poll-option').forEach(option => {
+                    option.addEventListener('click', selectOption);
+                });
+
+                activePollEl.style.display = 'block';
+            }
+
+            function checkIfUserVoted() {
+                if (!currentPoll || !userIp) return;
+                const sanitizedIp = sanitizeKey(userIp);
+                hasVoted = currentPoll.voters && currentPoll.voters[sanitizedIp];
+                if (hasVoted || currentPoll.isExpired) {
+                    voteBtn.disabled = true;
+                    document.querySelectorAll('.poll-option').forEach(option => {
+                        option.classList.add('disabled');
+                    });
+                }
+            }
+
+            function selectOption() {
+                if (hasVoted || currentPoll.isExpired) return;
+
+                document.querySelectorAll('.poll-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+
+                this.classList.add('selected');
+                selectedOption = parseInt(this.dataset.option);
+                voteBtn.disabled = false;
+            }
+
+            function shouldShowResults() {
+                if (!currentPoll) return false;
+                switch (currentPoll.resultsVisibility) {
+                    case 'always':
+                        return true;
+                    case 'after-poll-ends':
+                        return currentPoll.isExpired;
+                    case 'admin-only':
+                        return isAdmin;
+                    case 'after-voting':
+                        return hasVoted || currentPoll.isExpired;
+                    default:
+                        return false;
+                }
+            }
+
+            function submitVote() {
+                if (!selectedOption || !currentPoll) {
+                    errorMessage.textContent = 'Tafadhali chagua chaguo moja';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                if (hasVoted) {
+                    errorMessage.textContent = 'Umeshapiga kura tayari!';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                const option = currentPoll.options.find(o => o.id === selectedOption);
+                if (option) {
+                    option.votes++;
+                    currentPoll.totalVotes++;
+                    if (!currentPoll.voters) currentPoll.voters = {};
+                    const sanitizedIp = sanitizeKey(userIp);
+                    currentPoll.voters[sanitizedIp] = {
+                        optionId: selectedOption,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    const pollIndex = allPolls.findIndex(p => p && p.id === currentPoll.id);
+                    if (pollIndex !== -1) {
+                        allPolls[pollIndex] = currentPoll;
+                        savePollsToFirebase();
+                    }
+
+                    hasVoted = true;
+                    voteBtn.disabled = true;
+                    document.querySelectorAll('.poll-option').forEach(option => {
+                        option.classList.add('disabled');
+                    });
+                    if (shouldShowResults()) showResults();
+                }
+            }
+
+            function showResults() {
+                if (!currentPoll) return;
+                const totalVotes = currentPoll.totalVotes || 0;
+                let maxVotes = -1;
+                let minVotes = Infinity;
+                currentPoll.options.forEach(option => {
+                    maxVotes = Math.max(maxVotes, option.votes);
+                    minVotes = Math.min(minVotes, option.votes);
+                });
+
+                document.querySelectorAll('.poll-option').forEach(optionEl => {
+                    const optionId = parseInt(optionEl.dataset.option);
+                    const option = currentPoll.options.find(o => o.id === optionId);
+                    if (option) {
+                        const percentage = totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0;
+                        const roundedPercentage = Math.round(percentage);
+
+                        const resultEl = optionEl.querySelector('.poll-result');
+                        const percentageEl = optionEl.querySelector('.poll-percentage');
+
+                        resultEl.style.display = 'block';
+                        setTimeout(() => {
+                            resultEl.style.width = `${percentage}%`;
+                        }, 50);
+                        percentageEl.style.display = 'block';
+                        percentageEl.textContent = `${roundedPercentage}% (${option.votes} kura)`;
+
+                        optionEl.classList.remove('most-voted', 'least-voted');
+                        if (totalVotes > 0) {
+                            if (option.votes === maxVotes && maxVotes > 0) {
+                                optionEl.classList.add('most-voted');
+                            }
+                            if (option.votes === minVotes) {
+                                optionEl.classList.add('least-voted');
+                            }
+                        }
+                    }
+                });
+
+                totalVotesEl.style.display = 'block';
+                votesCountEl.textContent = totalVotes;
+                resultsInfo.style.display = 'none';
+                errorMessage.style.display = 'none';
+            }
+
+            function toggleTheme(theme) {
+                const container = document.querySelector('.container');
+                if (theme === 'whatsapp') {
+                    container.classList.add('whatsapp-theme');
+                } else {
+                    container.classList.remove('whatsapp-theme');
+                }
+                createPollBtn.style.display = 'block';
+            }
+
+            function formatTimeRemaining(ms) {
+                const seconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+                const weeks = Math.floor(days / 7);
+                const months = Math.floor(days / 30);
+                const years = Math.floor(days / 365);
+                if (years > 0) return `${years} mwaka${years > 1 ? 's' : ''}`;
+                if (months > 0) return `${months} mwezi${months > 1 ? 's' : ''}`;
+                if (weeks > 0) return `${weeks} wiki${weeks > 1 ? 's' : ''}`;
+                if (days > 0) return `${days} siku${days > 1 ? 's' : ''}`;
+                if (hours > 0) return `${hours} saa${hours > 1 ? 's' : ''}`;
+                if (minutes > 0) return `${minutes} dakika${minutes > 1 ? 's' : ''}`;
+                return `${seconds} sekunde${seconds > 1 ? 's' : ''}`;
+            }
+
+            function updateTimeRemaining() {
+                setInterval(() => {
+                    if (!currentPoll || !currentPoll.endTime) return;
+                    const now = new Date().getTime();
+                    const timeLeft = currentPoll.endTime - now;
+                    if (timeLeft > 0) {
+                        timeRemainingEl.textContent = `Muda uliobaki: ${formatTimeRemaining(timeLeft)}`;
+                        timeRemainingEl.classList.remove('time-expired');
+                    } else {
+                        timeRemainingEl.textContent = 'Muda wa kupiga kura umekwisha';
+                        timeRemainingEl.classList.add('time-expired');
+                        currentPoll.isExpired = true;
+                        voteBtn.disabled = true;
+                        document.querySelectorAll('.poll-option').forEach(option => {
+                            option.classList.add('disabled');
+                        });
+                        if (shouldShowResults()) showResults();
+                    }
+                }, 1000);
+            }
+
+            function checkPollExpiration() {
+                setInterval(() => {
+                    const now = new Date().getTime();
+                    allPolls.forEach(poll => {
+                        if (poll.endTime && now > poll.endTime && !poll.isExpired) {
+                            poll.isExpired = true;
+                            pollHistory.push(poll);
+                            allPolls = allPolls.filter(p => p.id !== poll.id);
+                            savePollsToFirebase();
+                            saveHistoryToFirebase();
+                            if (currentPoll && currentPoll.id === poll.id) {
+                                if (shouldShowResults()) showResults();
+                                voteBtn.disabled = true;
+                            }
+                        }
+                    });
+                    if (isAdmin) updateAdminPanel();
+                }, 1000);
+            }
+
+            function updateAdminPanel() {
+                if (!isAdmin) return;
+
+                adminPollsList.innerHTML = '';
+                allPolls.forEach(poll => {
+                    const timeLeft = poll.endTime ? Math.max(0, poll.endTime - new Date().getTime()) : 0;
+                    const card = document.createElement('div');
+                    card.className = 'admin-poll-card';
+                    let optionsHtml = '<div><strong>Chaguo:</strong></div><div class="options-list">';
+                    poll.options.forEach(option => {
+                        optionsHtml += `<div>${option.text}: ${option.votes} kura</div>`;
+                    });
+                    optionsHtml += '</div>';
+                    card.innerHTML = `
+                        <div><strong>Swali:</strong> ${poll.title}</div>
+                        <div><strong>Kura:</strong> ${poll.totalVotes}</div>
+                        ${optionsHtml}
+                        <div><strong>Muda:</strong> ${poll.isExpired ? 'Imemalizika' : formatTimeRemaining(timeLeft)}</div>
+                        <div><strong>Matokeo:</strong> ${
+                            poll.resultsVisibility === 'always' ? 'Muda Wote' :
+                            poll.resultsVisibility === 'after-poll-ends' ? 'Hadi Kura Imalize' :
+                            poll.resultsVisibility === 'admin-only' ? 'Admin Pekee' :
+                            'Baada ya Kupiga Kura'
+                        }</div>
+                        <button class="edit-btn" data-id="${poll.id}"><span class="icon">✏️</span>Hariri</button>
+                        <button class="delete-btn" data-id="${poll.id}"><span class="icon">🗑️</span>Futa</button>
+                    `;
+                    adminPollsList.appendChild(card);
+                });
+
+                adminHistoryList.innerHTML = '';
+                pollHistory.forEach(poll => {
+                    const card = document.createElement('div');
+                    card.className = 'admin-poll-card';
+                    let optionsHtml = '<div><strong>Chaguo:</strong></div><div class="options-list">';
+                    poll.options.forEach(option => {
+                        optionsHtml += `<div>${option.text}: ${option.votes} kura</div>`;
+                    });
+                    optionsHtml += '</div>';
+                    card.innerHTML = `
+                        <div><strong>Swali:</strong> ${poll.title}</div>
+                        <div><strong>Jumla ya Kura:</strong> ${poll.totalVotes}</div>
+                        ${optionsHtml}
+                        <div><strong>Muda:</strong> Imemalizika</div>
+                        <button class="delete-btn" data-id="${poll.id}"><span class="icon">🗑️</span>Futa</button>
+                    `;
+                    adminHistoryList.appendChild(card);
+                });
+
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const pollId = btn.dataset.id;
+                        allPolls = allPolls.filter(p => p.id !== pollId);
+                        pollHistory = pollHistory.filter(p => p.id !== pollId);
+                        savePollsToFirebase();
+                        saveHistoryToFirebase();
+                        updateAdminPanel();
+                        if (currentPoll && currentPoll.id === pollId) {
+                            currentPoll = allPolls[0] || null;
+                            renderPoll();
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const pollId = btn.dataset.id;
+                        const poll = allPolls.find(p => p.id === pollId);
+                        if (poll) {
+                            editPollForm.style.display = 'block';
+                            createPollForm.style.display = 'none';
+                            document.getElementById('edit-poll-title').value = poll.title;
+                            document.getElementById('edit-poll-duration').value = poll.duration;
+                            document.getElementById('edit-duration-unit').value = poll.durationUnit;
+                            document.getElementById('edit-results-visibility').value = poll.resultsVisibility;
+                            const editOptionsContainer = document.getElementById('edit-options-container');
+                            editOptionsContainer.innerHTML = '';
+                            poll.options.forEach(option => {
+                                const optionDiv = document.createElement('div');
+                                optionDiv.className = 'option-input-container';
+                                optionDiv.innerHTML = `
+                                    <input type="text" class="option-input" value="${option.text}">
+                                    <button class="remove-option-btn">✕</button>
+                                `;
+                                editOptionsContainer.appendChild(optionDiv);
+                                optionDiv.querySelector('.remove-option-btn').addEventListener('click', function() {
+                                    if (editOptionsContainer.children.length > 2) {
+                                        editOptionsContainer.removeChild(optionDiv);
+                                    }
+                                });
+                            });
+                            document.querySelector('.update-poll-btn').dataset.id = pollId;
+                        }
+                    });
+                });
+            }
+
+            function showPasswordModal() {
+                passwordModal.style.display = 'flex';
+                passwordInput.focus();
+            }
+
+            function hidePasswordModal() {
+                passwordModal.style.display = 'none';
+            }
+
+            function showErrorModal() {
+                errorModal.style.display = 'flex';
+            }
+
+            function hideErrorModal() {
+                errorModal.style.display = 'none';
+            }
+
+            function setupEventListeners() {
+                voteBtn.addEventListener('click', submitVote);
+
+                themeToggleBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        themeToggleBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        toggleTheme(this.dataset.theme);
+                    });
+                });
+
+                createPollBtn.addEventListener('click', () => {
+                    showPasswordModal();
+                });
+
+                passwordSubmit.addEventListener('click', () => {
+                    const password = passwordInput.value;
+                    if (password === CREATE_POLL_PASSWORD) {
+                        isAdmin = true;
+                        adminSection.style.display = 'block';
+                        activePollEl.style.display = 'none';
+                        createPollForm.style.display = 'block';
+                        editPollForm.style.display = 'none';
+                        hidePasswordModal();
+                        updateAdminPanel();
+                    } else {
+                        passwordInput.value = '';
+                        hidePasswordModal();
+                        showErrorModal();
+                    }
+                });
+
+                passwordBackBtn.addEventListener('click', () => {
+                    hidePasswordModal();
+                    activePollEl.style.display = 'block';
+                });
+
+                errorCloseBtn.addEventListener('click', () => {
+                    hideErrorModal();
+                    activePollEl.style.display = 'block';
+                });
+
+                backBtn.addEventListener('click', () => {
+                    isAdmin = false;
+                    adminSection.style.display = 'none';
+                    createPollForm.style.display = "none";
+                    editPollForm.style.display = 'none';
+                    activePollEl.style.display = 'block';
+                    renderPoll();
+                });
+
+                document.querySelectorAll('.add-option-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const optionsContainer = e.target.closest('.create-poll-form') ? 
+                            document.getElementById('options-container') : 
+                            document.getElementById('edit-options-container');
+                        const optionCount = optionsContainer.children.length + 1;
+                        const optionDiv = document.createElement('div');
+                        optionDiv.className = 'option-input-container';
+                        optionDiv.innerHTML = `
+                            <input type="text" class="option-input" placeholder="Chaguo ${optionCount}">
+                            <button class="remove-option-btn">✕</button>
+                        `;
+                        optionsContainer.appendChild(optionDiv);
+                        optionDiv.querySelector('.remove-option-btn').addEventListener('click', function() {
+                            if (optionsContainer.children.length > 2) {
+                                optionsContainer.removeChild(optionDiv);
+                            }
+                        });
+                    });
+                });
+
+                document.querySelectorAll('.remove-option-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const optionsContainer = document.getElementById('options-container');
+                        if (optionsContainer.children.length > 2) {
+                            optionsContainer.removeChild(this.parentElement);
+                        }
+                    });
+                });
+
+                const submitPollBtn = document.querySelector('.submit-poll-btn');
+                submitPollBtn.addEventListener('click', () => {
+                    const titleInput = document.getElementById('poll-title');
+                    const optionInputs = document.querySelectorAll('#options-container .option-input');
+                    const durationInput = document.getElementById('poll-duration');
+                    const durationUnit = document.getElementById('duration-unit');
+                    const resultsVisibility = document.getElementById('results-visibility');
+
+                    if (!titleInput.value.trim()) {
+                        alert('Tafadhali jaza swali la kura!');
+                        return;
+                    }
+
+                    let validOptions = [];
+                    optionInputs.forEach(input => {
+                        if (input.value.trim()) validOptions.push(input.value.trim());
+                    });
+
+                    if (validOptions.length < 2) {
+                        alert('Tafadhali jaza angalau chaguo 2!');
+                        return;
+                    }
+
+                    const duration = parseInt(durationInput.value) || 5;
+                    const durationUnitValue = durationUnit.value;
+                    const durationMultipliers = {
+                        seconds: 1000,
+                        minutes: 60000,
+                        hours: 3600000,
+                        weeks: 604800000,
+                        months: 2592000000,
+                        years: 31536000000
+                    };
+                    const endTime = new Date().getTime() + duration * durationMultipliers[durationUnitValue];
+
+                    const newPoll = {
+                        id: 'poll-' + Date.now(),
+                        title: titleInput.value.trim(),
+                        author: 'maloshadavid@92gmail.com',
+                        date: new Date().toLocaleDateString('sw'),
+                        options: validOptions.map((text, index) => ({
+                            id: index + 1,
+                            text: text,
+                            votes: 0
+                        })),
+                        totalVotes: 0,
+                        duration: duration,
+                        durationUnit: durationUnitValue,
+                        endTime: endTime,
+                        isExpired: false,
+                        resultsVisibility: resultsVisibility.value,
+                        voters: {}
+                    };
+
+                    allPolls = [newPoll];
+                    currentPoll = newPoll;
+                    savePollsToFirebase();
+                    renderPoll();
+                    updateAdminPanel();
+                    if (shouldShowResults()) showResults();
+
+                    titleInput.value = '';
+                    durationInput.value = '';
+                    document.getElementById('options-container').innerHTML = `
+                        <div class="option-input-container">
+                            <input type="text" class="option-input" placeholder="Chaguo 1">
+                            <button class="remove-option-btn">✕</button>
+                        </div>
+                        <div class="option-input-container">
+                            <input type="text" class="option-input" placeholder="Chaguo 2">
+                            <button class="remove-option-btn">✕</button>
+                        </div>
+                    `;
+                    activePollEl.style.display = 'block';
+                    createPollForm.style.display = 'none';
+                });
+
+                const updatePollBtn = document.querySelector('.update-poll-btn');
+                updatePollBtn.addEventListener('click', () => {
+                    const pollId = updatePollBtn.dataset.id;
+                    const titleInput = document.getElementById('edit-poll-title');
+                    const durationInput = document.getElementById('edit-poll-duration');
+                    const durationUnit = document.getElementById('edit-duration-unit');
+                    const resultsVisibility = document.getElementById('edit-results-visibility');
+                    const optionInputs = document.querySelectorAll('#edit-options-container .option-input');
+
+                    if (!titleInput.value.trim()) {
+                        alert('Tafadhali jaza swali la kura!');
+                        return;
+                    }
+
+                    let validOptions = [];
+                    optionInputs.forEach(input => {
+                        if (input.value.trim()) validOptions.push(input.value.trim());
+                    });
+
+                    if (validOptions.length < 2) {
+                        alert('Tafadhali jaza angalau chaguo 2!');
+                        return;
+                    }
+
+                    const duration = parseInt(durationInput.value) || 5;
+                    const durationUnitValue = durationUnit.value;
+                    const durationMultipliers = {
+                        seconds: 1000,
+                        minutes: 60000,
+                        hours: 3600000,
+                        weeks: 604800000,
+                        months: 2592000000,
+                        years: 31536000000
+                    };
+                    const endTime = new Date().getTime() + duration * durationMultipliers[durationUnitValue];
+
+                    const pollIndex = allPolls.findIndex(p => p.id === pollId);
+                    if (pollIndex !== -1) {
+                        allPolls[pollIndex] = {
+                            ...allPolls[pollIndex],
+                            title: titleInput.value.trim(),
+                            duration: duration,
+                            durationUnit: durationUnitValue,
+                            endTime: endTime,
+                            options: validOptions.map((text, index) => ({
+                                id: index + 1,
+                                text: text,
+                                votes: allPolls[pollIndex].options[index] ? allPolls[pollIndex].options[index].votes : 0
+                            })),
+                            resultsVisibility: resultsVisibility.value,
+                            voters: allPolls[pollIndex].voters || {}
+                        };
+                        currentPoll = allPolls[pollIndex];
+                        savePollsToFirebase();
+                        renderPoll();
+                        updateAdminPanel();
+                        if (shouldShowResults()) showResults();
+                        editPollForm.style.display = 'none';
+                        activePollEl.style.display = 'block';
+                    }
+                });
+
+                lightModeBtn.addEventListener('click', () => {
+                    document.body.classList.remove('dark-mode');
+                });
+
+                darkModeBtn.addEventListener('click', () => {
+                    document.body.classList.add('dark-mode');
+                });
+            }
+
+            init();
+        });
     </script>
 </body>
 </html>
+
+
+ 
