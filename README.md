@@ -1,1 +1,1 @@
-# malosha academic results 
+# MFUMO WA KUPINGA KURA MAFANIKIO YANGU YA KWANZA
